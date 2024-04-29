@@ -5,6 +5,8 @@ Fetch API based utility for comfortable requests
 > [!NOTE]  
 > Works only with JSON response
 
+Demo: https://github.com/mukhindev/request-demo
+
 ## Install
 
 ```
