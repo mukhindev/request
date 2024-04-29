@@ -58,7 +58,7 @@ getTodo({ todoId: 3, params: { "some-param": 42 }} /* Call location options */)
 ```JavaScript
 //    Request   Request creation function    Request options
 //       ↓                ↓                        ↓
-const getTodo = createRequest((options) => { ...options })
+const getTodo = createRequest((options) => ({ ...options }))
 ```
 
 ```JavaScript
@@ -88,10 +88,10 @@ For example, API url, authorization header, token refresh process, etc.
 import { createRequest, joinUrl } from "@mukhindev/request";
 
 // Custom createRequest function extends default
-const createJsonPlaceholderRequest = (getOptions) => {
+const createJsonPlaceholderRequest = (forwardOptions) => {
   return createRequest(async (options /* Call location options */) => {
     // Request location options
-    const { url, ...other } = await getOptions(options);
+    const { url, ...other } = await forwardOptions(options);
 
     // You can execute an async process before the request. For example, check and refresh token
     // await checkToken()
@@ -134,9 +134,9 @@ getTodo({ todoId: 3, params: { "some-param": 42 }} /* Call location options */)
 ```TypeScript
 import { createRequest, CreateRequestFn, joinUrl } from "@mukhindev/request";
 
-const createJsonPlaceholderRequest: CreateRequestFn = (getOptions) => {
+const createJsonPlaceholderRequest: CreateRequestFn = (forwardOptions) => {
   return createRequest(async (options) => {
-    const { url, ...other } = await getOptions(options);
+    const { url, ...other } = await forwardOptions(options);
 
     return {
       url: joinUrl("https://jsonplaceholder.typicode.com", url),

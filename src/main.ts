@@ -13,12 +13,12 @@ export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   headers?: Record<string, string | number | boolean>;
 };
 
-export type GetOptionsFn<T extends object> = (
+export type ForwardOptionsFn<T extends object> = (
   options: T & RequestOptions
 ) => RequestOptions | Promise<RequestOptions>;
 
 export type CreateRequestFn = <T extends object, D = unknown>(
-  forwardOptions: GetOptionsFn<T>
+  forwardOptions: ForwardOptionsFn<T>
 ) => (options: T & RequestOptions) => Promise<Reply<D>>;
 
 export const createRequest: CreateRequestFn = (forwardOptions) => {
