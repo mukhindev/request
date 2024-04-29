@@ -91,10 +91,13 @@ import { createRequest, joinUrl } from "@mukhindev/request";
 const createJsonPlaceholderRequest = (forwardOptions) => {
   return createRequest(async (options /* Call location options */) => {
     // Request location options
-    const { url, ...other } = await forwardOptions(options);
+    const { isAuthorization, url, ...other } = await forwardOptions(options);
 
     // You can execute an async process before the request. For example, check and refresh token
-    // await checkToken()
+    if (isAuthorization) {
+      // await checkToken()
+    }
+   
 
     // Final options
     return {
@@ -125,7 +128,7 @@ const getTodo = createJsonPlaceholderRequest(
 
 ```JavaScript
 // Request to https://jsonplaceholder.typicode.com/todos/3?some-param=42
-getTodo({ todoId: 3, params: { "some-param": 42 }} /* Call location options */)
+getTodo({ isAuthorization: true, todoId: 3, params: { "some-param": 42 }} /* Call location options */)
   .then((reply) => console.log(reply.data));
 ```
 
@@ -134,9 +137,16 @@ getTodo({ todoId: 3, params: { "some-param": 42 }} /* Call location options */)
 ```TypeScript
 import { createRequest, CreateRequestFn, joinUrl } from "@mukhindev/request";
 
-const createJsonPlaceholderRequest: CreateRequestFn = (forwardOptions) => {
+type ExtendedOptions = {
+  // Custom special option for all created requests by createJsonPlaceholderRequest
+  isAuthorization: boolean;
+};
+
+const createJsonPlaceholderRequest: CreateRequestFn<ExtendedOptions> = (forwardOptions) => {
   return createRequest(async (options) => {
-    const { url, ...other } = await forwardOptions(options);
+    const { isAuthorization, url, ...other } = await forwardOptions(options);
+    
+    if (isAuthorization) { /*...*/ }
 
     return {
       url: joinUrl("https://jsonplaceholder.typicode.com", url),
@@ -176,6 +186,17 @@ const getTodo = createJsonPlaceholderRequest<CallOptions, ReplyData>(
 ```
 
 ```TypeScript
-getTodo({ todoId: 3, params: { "some-param": 42 }} /* Type safe request options */)
-  .then((reply) => console.log(reply.data /* Type safe replay data */));
+getTodo({
+  // Type safe request options
+  isAuthorization: true,
+  todoId: 3,
+  params: {
+    "some-param": 42,
+  },
+}).then((reply) => {
+  // Type safe replay data
+  console.log(reply.data)
+});
 ```
+
+

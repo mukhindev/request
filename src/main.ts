@@ -8,18 +8,19 @@ export type Reply<Data> = {
   status: number;
 };
 
-export type RequestOptions = Omit<Partial<Request>, "headers"> & {
+export type RequestOptions<E = object> = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
-};
+} & E;
 
-export type ForwardOptionsFn<T extends object> = (
-  options: T & RequestOptions
-) => RequestOptions | Promise<RequestOptions>;
+export type ForwardOptionsFn<T extends object, E = object> = (
+  options: T & RequestOptions<E>
+) => RequestOptions<E> | Promise<RequestOptions<E>>;
 
-export type CreateRequestFn = <T extends object, D = unknown>(
-  forwardOptions: ForwardOptionsFn<T>
-) => (options: T & RequestOptions) => Promise<Reply<D>>;
+/** E: extended options (optional), T: options, D: data,   */
+export type CreateRequestFn<E = object> = <T extends object, D = unknown>(
+  forwardOptions: ForwardOptionsFn<T, E>
+) => (options: T & RequestOptions<E>) => Promise<Reply<D>>;
 
 export const createRequest: CreateRequestFn = (forwardOptions) => {
   return async (options) => {
