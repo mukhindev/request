@@ -1,7 +1,5 @@
 import { createSearchParams, createHeaders } from "./utils";
 
-type CustomOptions = object & Partial<Request>;
-
 export type Reply<Data> = {
   data: Data;
   request: Request;
@@ -15,18 +13,22 @@ export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   headers?: Record<string, string | number | boolean>;
 };
 
-export type CreateRequestFn = typeof createRequest;
+export type GetOptionsFn<T extends object> = (
+  options: T & RequestOptions
+) => RequestOptions | Promise<RequestOptions>;
 
-export function createRequest<Options extends CustomOptions, Data = unknown>(
-  getOptions: (options: Options) => RequestOptions | Promise<RequestOptions>
-) {
-  return async (options: Options): Promise<Reply<Data>> => {
+export type CreateRequestFn = <T extends object, D = unknown>(
+  forwardOptions: GetOptionsFn<T>
+) => (options: T & RequestOptions) => Promise<Reply<D>>;
+
+export const createRequest: CreateRequestFn = (forwardOptions) => {
+  return async (options) => {
     const {
       url = "/",
       headers = {},
       params = {},
       ...requestOptions
-    } = await getOptions(options);
+    } = await forwardOptions(options);
 
     const requestUrl = new URL(url);
     const searchParams = createSearchParams(params);
@@ -40,7 +42,7 @@ export function createRequest<Options extends CustomOptions, Data = unknown>(
     const response = await fetch(request);
     const data = await response.json();
 
-    const reply: Reply<Data> = {
+    const reply = {
       data,
       request,
       response,
@@ -54,6 +56,7 @@ export function createRequest<Options extends CustomOptions, Data = unknown>(
 
     return reply;
   };
-}
+};
 
+// exports utils
 export { joinUrl } from "./utils/joinUrl";

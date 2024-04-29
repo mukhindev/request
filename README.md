@@ -27,6 +27,19 @@ const getPost = createRequest(
 getPost({ postId: 3, params: { "some-param": 42 }} /* Call location options */)
   .then((res) => console.log(res.data));
 ```
+## Terms
+
+```JavaScript
+//    Request   Request creation function       Request 
+//       ↓                ↓                        ↓
+const getPost = createRequest((options) => { ...options })
+```
+
+```JavaScript
+//               Reply
+                   ↓
+getPost({}).then((res) => console.log(res.data));
+```
 
 ## Extended request
 
