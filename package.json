@@ -1,8 +1,10 @@
 {
   "name": "@mukhindev/request",
-  "private": true,
   "version": "1.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "module": "./dist/main.js",
   "main": "./dist/main.umd.cjs",
   "exports": {
