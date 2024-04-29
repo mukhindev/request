@@ -1,21 +1,41 @@
 # @mukhindev/request
 
+Fetch API based utility for comfortable requests
+
 > [!NOTE]  
-> Beta. Works only with JSON response
+> Works only with JSON response
+
+## Install
+
+```
+npm install @mukhindev/request
+```
 
 ## Simple request
 
 ```JavaScript
 import { createRequest } from "@mukhindev/request";
 
-const getPost = createRequest(
+const createTodo = createRequest(
   (options) => {
     // Call location options
-    const { postId, ...other } = options;
+    const { ...other } = options;
 
     // Final options
     return {
-      url: `https://jsonplaceholder.typicode.com/posts/${postId}`,
+      method: "POST",
+      url: `https://jsonplaceholder.typicode.com/todos`,
+      ...other,
+    };
+  }
+);
+
+const getTodo = createRequest(
+  (options) => {
+    const { todoId, ...other } = options;
+
+    return {
+      url: `https://jsonplaceholder.typicode.com/todos/${todoId}`,
       ...other,
     };
   }
@@ -23,23 +43,39 @@ const getPost = createRequest(
 ```
 
 ```JavaScript
-// Request to https://jsonplaceholder.typicode.com/posts/3?some-param=42
-getPost({ postId: 3, params: { "some-param": 42 }} /* Call location options */)
-  .then((res) => console.log(res.data));
+// POST: https://jsonplaceholder.typicode.com/todos
+createTodo({ data: { title: "Buy milk" } })
+
+// GET: https://jsonplaceholder.typicode.com/todos/3?some-param=42
+getTodo({ todoId: 3, params: { "some-param": 42 }} /* Call location options */)
+  .then((reply) => console.log(reply.data));
 ```
+
 ## Terms
 
 ```JavaScript
-//    Request   Request creation function       Request 
+//    Request   Request creation function    Request options
 //       ↓                ↓                        ↓
-const getPost = createRequest((options) => { ...options })
+const getTodo = createRequest((options) => { ...options })
 ```
 
 ```JavaScript
-//               Reply
-                   ↓
-getPost({}).then((res) => console.log(res.data));
+//                Reply
+//                  ↓
+getTodo({}).then((reply) => console.log(reply.data));
 ```
+
+## Reply
+
+> Why is it called "Reply" instead of "Response"?
+
+Because Response (Fetch API) is inside. `reply.response`
+
+`reply.data`: Received data  
+`reply.request`: Request (Fetch API)  
+`reply.response`: Response (Fetch API)  
+`reply.headers`: Response Headers as simple object. Headers (Fetch API) in `reply.response`  
+`reply.status`: Status number
 
 ## Extended request
 
@@ -70,15 +106,15 @@ const createJsonPlaceholderRequest = (getOptions) => {
 ```
 
 ```JavaScript
-const getPost = createJsonPlaceholderRequest(
+const getTodo = createJsonPlaceholderRequest(
   (options) => {
     // Call location options
-    const { postId, ...other } = options;
+    const { todoId, ...other } = options;
 
     // Request location options
     return {
       // Short pathname. Full url will be received in createJsonPlaceholderRequest
-      url: `/posts/${postId}`,
+      url: `/todos/${todoId}`,
       ...other,
     };
   }
@@ -86,9 +122,9 @@ const getPost = createJsonPlaceholderRequest(
 ```
 
 ```JavaScript
-// Request to https://jsonplaceholder.typicode.com/posts/3?some-param=42
-getPost({ postId: 3, params: { "some-param": 42 }} /* Call location options */)
-  .then((res) => console.log(res.data));
+// Request to https://jsonplaceholder.typicode.com/todos/3?some-param=42
+getTodo({ todoId: 3, params: { "some-param": 42 }} /* Call location options */)
+  .then((reply) => console.log(reply.data));
 ```
 
 ## TypeScript
@@ -111,7 +147,7 @@ const createJsonPlaceholderRequest: CreateRequestFn = (getOptions) => {
 ```TypeScript
 // Request call options
 type CallOptions = {
-  postId: number;
+  todoId: number;
   params: {
     "some-param": number;
   };
@@ -122,15 +158,15 @@ type ReplyData = {
   userId: number;
   id: number;
   title: string;
-  body: string;
+  completed: boolean;
 };
 
-const getPost = createJsonPlaceholderRequest<CallOptions, ReplyData>(
+const getTodo = createJsonPlaceholderRequest<CallOptions, ReplyData>(
   (options) => {
-    const { postId, ...other } = options;
+    const { todoId, ...other } = options;
 
     return {
-      url: `/posts/${postId}`,
+      url: `/todos/${todoId}`,
       ...other,
     };
   }
@@ -138,6 +174,6 @@ const getPost = createJsonPlaceholderRequest<CallOptions, ReplyData>(
 ```
 
 ```TypeScript
-getPost({ postId: 3, params: { "some-param": 42 }} /* Type safe request options */)
-  .then((res) => console.log(res.data) /* Type safe replay data */);
+getTodo({ todoId: 3, params: { "some-param": 42 }} /* Type safe request options */)
+  .then((reply) => console.log(reply.data /* Type safe replay data */));
 ```
