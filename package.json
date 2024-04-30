@@ -1,12 +1,22 @@
 {
   "name": "@mukhindev/request",
   "version": "1.0.2",
+  "author": "Sergey Mukhin",
+  "description": "Fetch API based utility for comfortable requests",
+  "keywords": [
+    "fetch",
+    "fetch-api",
+    "request",
+    "typescript"
+  ],
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"
   ],
   "module": "./dist/main.js",
   "main": "./dist/main.umd.cjs",
+  "types": "./dist/main.d.ts",
   "exports": {
     ".": {
       "import": "./dist/main.js",
