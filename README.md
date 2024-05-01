@@ -18,6 +18,7 @@ npm install @mukhindev/request
 ```JavaScript
 import { createRequest } from "@mukhindev/request";
 
+// POST
 const createTodo = createRequest(
   (options) => {
     // Call location options
@@ -27,11 +28,12 @@ const createTodo = createRequest(
     return {
       method: "POST",
       url: `https://jsonplaceholder.typicode.com/todos`,
-      ...other,
+      ...other, // include body, signal, headers, etc.
     };
   }
 );
 
+// GET
 const getTodo = createRequest(
   (options) => {
     const { todoId, ...other } = options;
@@ -52,6 +54,12 @@ createTodo({ data: { title: "Buy milk" } })
 getTodo({ todoId: 3, params: { "some-param": 42 }} /* Call location options */)
   .then((reply) => console.log(reply.data));
 ```
+
+## data vs body
+
+`body` works the same it works in `fetch` (Fetch API).
+
+`data` will automatically prepare the data for `body`. For example, the object uses `JSON.stringify`.
 
 ## Terms
 

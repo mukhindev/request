@@ -11,6 +11,7 @@ export type Reply<Data> = {
 export type RequestOptions<E = object> = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
+  data?: object;
 } & E;
 
 export type ForwardOptionsFn<T extends object, E = object> = (
@@ -28,6 +29,7 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       url = "/",
       headers = {},
       params = {},
+      data,
       ...requestOptions
     } = await forwardOptions(options);
 
@@ -35,16 +37,22 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     const searchParams = createSearchParams(params);
     requestUrl.search = searchParams.toString();
 
+    if (!requestOptions.body && typeof data === "object" && data !== null) {
+      Object.assign(requestOptions, {
+        body: JSON.stringify(data),
+      });
+    }
+
     const request = new Request(requestUrl, {
       headers: createHeaders(headers),
       ...requestOptions,
     });
 
     const response = await fetch(request);
-    const data = await response.json();
+    const replyData = await response.json();
 
     const reply = {
-      data,
+      data: replyData,
       request,
       response,
       headers: Object.fromEntries(response.headers.entries()),
