@@ -8,8 +8,8 @@ export default defineConfig((config) => {
     build: {
       lib: {
         name: "Request",
-        entry: "src/main.ts",
-        fileName: "main",
+        entry: "src/index.ts",
+        fileName: "index",
       },
     },
     plugins: [dts()],
