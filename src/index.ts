@@ -12,7 +12,7 @@ import { createSearchParams } from "./utils/createSearchParams";
 export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
-  data: unknown;
+  data?: unknown;
 };
 
 export type Reply<D> = {
