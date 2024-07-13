@@ -1,6 +1,6 @@
 {
   "name": "@mukhindev/request",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "Sergey Mukhin",
   "description": "Fetch API based utility for comfortable requests",
   "keywords": [
