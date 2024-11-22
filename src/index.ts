@@ -2,7 +2,6 @@
  * Generic abbreviations
  * O — Options (including options union)
  * E — Extended options
- * R = Request options (finalized request options)
  * D = Returned data (response body)
  */
 
@@ -24,13 +23,13 @@ export type Reply<D> = {
 };
 
 export type ForwardOptionsFn<O, E> = (
-  options: RequestOptions & O & E
+  options: RequestOptions & O & E,
 ) => (RequestOptions & E) | Promise<RequestOptions & E>;
 
 export type RequestFn<O, D> = (options: O) => Promise<Reply<D>>;
 
 export type CreateRequestFn<E = unknown> = <O, D>(
-  forwardOptions: ForwardOptionsFn<O, E>
+  forwardOptions: ForwardOptionsFn<O, E>,
 ) => RequestFn<O & RequestOptions & E, D>;
 
 /**
@@ -77,6 +76,8 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     requestUrl.search = searchParams.toString();
 
     if (!requestOptions.body && typeof data === "object" && data !== null) {
+      headers["Content-Type"] = "application/json";
+
       Object.assign(requestOptions, {
         body: JSON.stringify(data),
       });
