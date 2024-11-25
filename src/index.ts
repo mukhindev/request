@@ -89,7 +89,11 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     });
 
     const response = await fetch(request);
-    const replyData = await response.json();
+    let replyData = null;
+
+    try {
+      replyData = await response.json();
+    } catch {}
 
     const reply = {
       data: replyData,

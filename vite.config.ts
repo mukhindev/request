@@ -1,9 +1,7 @@
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
-export default defineConfig((config) => {
-  const { mode } = config;
-
+export default defineConfig(() => {
   return {
     build: {
       lib: {
