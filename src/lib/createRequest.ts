@@ -1,12 +1,12 @@
+import { createSearchParams } from "./utils/createSearchParams";
+import { createHeaders } from "./utils/createHeaders";
+
 /**
  * Generic abbreviations
  * O — Options (including options union)
  * E — Extended options
  * D = Returned data (response body)
  */
-
-import { createHeaders } from "./utils/createHeaders";
-import { createSearchParams } from "./utils/createSearchParams";
 
 export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
@@ -110,7 +110,3 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     return reply;
   };
 };
-
-/** Public utils */
-export { joinUrl } from "./utils/joinUrl";
-export type { RequestOptionsOf, RequestReplyOf } from "./types/utils/RequestOf";
