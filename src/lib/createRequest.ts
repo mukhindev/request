@@ -12,6 +12,7 @@ export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
   data?: unknown;
+  onError?: (reply: Reply<unknown>) => Promise<Reply<unknown>>;
 };
 
 export type Reply<D> = {
@@ -20,6 +21,7 @@ export type Reply<D> = {
   response: Response;
   headers: Record<string, string>;
   status: number;
+  options: RequestOptions;
 };
 
 export type ForwardOptionsFn<O, E> = (
@@ -68,6 +70,7 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       headers = {},
       params = {},
       data,
+      onError,
       ...requestOptions
     } = await forwardOptions(options);
 
@@ -101,9 +104,16 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       response,
       headers: Object.fromEntries(response.headers.entries()),
       status: response.status,
+      options: await forwardOptions(options),
     };
 
-    if (response.status >= 400) {
+    const isErrorStatus = response.status >= 400;
+
+    if (isErrorStatus && onError) {
+      return await onError(reply);
+    }
+
+    if (isErrorStatus) {
       throw reply;
     }
 
