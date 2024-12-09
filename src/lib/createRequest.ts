@@ -17,10 +17,11 @@ export type RequestOptions = Omit<Partial<Request>, "headers"> & {
 
 export type Reply<D> = {
   data: D;
+  error?: unknown;
   request: Request;
-  response: Response;
+  response: Response | null;
   headers: Record<string, string>;
-  status: number;
+  status: number | null;
   options: RequestOptions;
 };
 
@@ -91,30 +92,41 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       ...requestOptions,
     });
 
-    const response = await fetch(request);
-    let replyData = null;
-
-    try {
-      replyData = await response.json();
-    } catch {}
-
-    const reply = {
-      data: replyData,
+    const reply: Reply<unknown> = {
+      data: null,
       request,
-      response,
-      headers: Object.fromEntries(response.headers.entries()),
-      status: response.status,
+      response: null,
+      headers: {},
+      status: null,
       options: await forwardOptions(options),
     };
 
-    const isErrorStatus = response.status >= 400;
+    const handleError = async (error: unknown) => {
+      reply.error = error;
 
-    if (isErrorStatus && onError) {
-      return await onError(reply);
+      if (onError) {
+        return await onError(reply);
+      }
+
+      throw reply;
+    };
+
+    try {
+      reply.response = await fetch(request);
+      reply.headers = Object.fromEntries(reply.response.headers.entries());
+      reply.status = reply.response.status;
+    } catch (error) {
+      return handleError(error);
     }
 
-    if (isErrorStatus) {
-      throw reply;
+    try {
+      reply.data = await reply.response.json();
+    } catch (error) {
+      return handleError(error);
+    }
+
+    if (reply.response.status >= 400) {
+      return handleError(new Error("Server error status (>= 400)"));
     }
 
     return reply;
