@@ -127,12 +127,17 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       return handleError(error);
     }
 
-    // Get data
+    // Get data as text
     try {
-      reply.data = await reply.response.json();
+      reply.data = await reply.response.text();
     } catch (error) {
       return handleError(error);
     }
+
+    // Handle JSON
+    try {
+      reply.data = JSON.parse(reply.data);
+    } catch {}
 
     // Error status
     if (reply.response.status >= 400) {
