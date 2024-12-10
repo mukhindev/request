@@ -12,16 +12,20 @@ export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
   data?: unknown;
+  // Custom error handler
   onError?: (reply: Reply<unknown>) => Promise<Reply<unknown>>;
 };
 
 export type Reply<D> = {
   data: D;
+  /** Error if request is not sent */
   error?: unknown;
   request: Request;
+  /** Received response (null if request sending error) */
   response: Response | null;
   headers: Record<string, string>;
-  status: number | null;
+  /** Status == 0 if was't response */
+  status: number;
   options: RequestOptions;
 };
 
@@ -79,6 +83,7 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     const searchParams = createSearchParams(params);
     requestUrl.search = searchParams.toString();
 
+    // If json, then set relevant headers
     if (!requestOptions.body && typeof data === "object" && data !== null) {
       headers["Content-Type"] = "application/json";
 
@@ -92,18 +97,20 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       ...requestOptions,
     });
 
-    const reply: Reply<unknown> = {
+    // Prepare reply object
+    const reply: Reply<any> = {
       data: null,
       request,
       response: null,
       headers: {},
-      status: null,
+      status: 0,
       options: await forwardOptions(options),
     };
 
     const handleError = async (error: unknown) => {
       reply.error = error;
 
+      // If has custom error handler
       if (onError) {
         return await onError(reply);
       }
@@ -111,6 +118,7 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       throw reply;
     };
 
+    // Send request
     try {
       reply.response = await fetch(request);
       reply.headers = Object.fromEntries(reply.response.headers.entries());
@@ -119,12 +127,14 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       return handleError(error);
     }
 
+    // Get data
     try {
       reply.data = await reply.response.json();
     } catch (error) {
       return handleError(error);
     }
 
+    // Error status
     if (reply.response.status >= 400) {
       return handleError(new Error("Server error status (>= 400)"));
     }
