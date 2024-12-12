@@ -8,6 +8,8 @@ import { createHeaders } from "./utils/createHeaders";
  * D = Returned data (response body)
  */
 
+type ResponseType = "text" | "json" | "blob";
+
 export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
@@ -21,6 +23,7 @@ export type Reply<D> = {
   /** Error if request is not sent */
   error?: unknown;
   request: Request;
+  responseType: ResponseType;
   /** Received response (null if request sending error) */
   response: Response | null;
   headers: Record<string, string>;
@@ -100,6 +103,7 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     // Prepare reply object
     const reply: Reply<any> = {
       data: null,
+      responseType: "text",
       request,
       response: null,
       headers: {},
@@ -123,21 +127,52 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       reply.response = await fetch(request);
       reply.headers = Object.fromEntries(reply.response.headers.entries());
       reply.status = reply.response.status;
+
+      const contentType = reply.response.headers.get("content-type");
+      const contentDisposition = reply.response.headers.get("content-disposition"); // prettier-ignore
+
+      if (contentType?.startsWith("text/plain")) {
+        reply.responseType = "text";
+      }
+
+      if (contentType?.startsWith("application/json")) {
+        reply.responseType = "json";
+      }
+
+      if (
+        contentType?.startsWith("application/octet-stream") ||
+        contentDisposition?.startsWith("attachment")
+      ) {
+        reply.responseType = "blob";
+      }
     } catch (error) {
       return handleError(error);
     }
 
-    // Get data as text
-    try {
-      reply.data = await reply.response.text();
-    } catch (error) {
-      return handleError(error);
+    if (reply.responseType === "text") {
+      // Get data as text
+      try {
+        reply.data = await reply.response.text();
+      } catch (error) {
+        return handleError(error);
+      }
     }
 
-    // Handle JSON
-    try {
-      reply.data = JSON.parse(reply.data);
-    } catch {}
+    if (reply.responseType === "json") {
+      try {
+        reply.data = await reply.response.json();
+      } catch (error) {
+        return handleError(error);
+      }
+    }
+
+    if (reply.responseType === "blob") {
+      try {
+        reply.data = await reply.response.blob();
+      } catch (error) {
+        return handleError(error);
+      }
+    }
 
     // Error status
     if (reply.response.status >= 400) {
