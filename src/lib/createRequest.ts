@@ -129,17 +129,14 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       reply.status = reply.response.status;
 
       const contentType = reply.response.headers.get("content-type");
+      const contentLength = +(reply.response.headers.get("content-length") ?? 0); // prettier-ignore
       const contentDisposition = reply.response.headers.get("content-disposition"); // prettier-ignore
 
-      if (contentType?.startsWith("text/plain")) {
+      if (contentLength === 0 || contentType?.startsWith("text/plain")) {
         reply.responseType = "text";
-      }
-
-      if (contentType?.startsWith("application/json")) {
+      } else if (contentType?.startsWith("application/json")) {
         reply.responseType = "json";
-      }
-
-      if (
+      } else if (
         contentType?.startsWith("application/octet-stream") ||
         contentDisposition?.startsWith("attachment")
       ) {
@@ -150,7 +147,6 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     }
 
     if (reply.responseType === "text") {
-      // Get data as text
       try {
         reply.data = await reply.response.text();
       } catch (error) {
