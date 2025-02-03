@@ -83,7 +83,19 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     } = await forwardOptions(options);
 
     const requestUrl = new URL(url);
-    const searchParams = createSearchParams(params);
+
+    // Get search params object from request url
+    const searchParamsFromUrl: Record<string, unknown> = {};
+    for (const [key, value] of new URLSearchParams(requestUrl.search)) {
+      searchParamsFromUrl[key] = value;
+    }
+
+    // Merge search params from url and params
+    const searchParams = createSearchParams({
+      ...searchParamsFromUrl,
+      ...params,
+    });
+
     requestUrl.search = searchParams.toString();
 
     // If json, then set relevant headers
