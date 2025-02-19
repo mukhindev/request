@@ -1,5 +1,5 @@
 export function createSearchParams(
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): URLSearchParams {
   const searchParams = new URLSearchParams();
 
@@ -20,6 +20,10 @@ export function createSearchParams(
     }
 
     if (Array.isArray(value)) {
+      if (!value.length) {
+        return;
+      }
+
       searchParams.set(param, value.join(","));
       return;
     }
