@@ -14,6 +14,7 @@ export type RequestOptions = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
   data?: unknown;
+  responseType?: ResponseType;
   // Custom error handler
   onError?: (reply: Reply<unknown>) => Promise<Reply<unknown>>;
 };
@@ -78,6 +79,7 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       headers = {},
       params = {},
       data,
+      responseType,
       onError,
       ...requestOptions
     } = await forwardOptions(options);
@@ -115,7 +117,7 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     // Prepare reply object
     const reply: Reply<any> = {
       data: null,
-      responseType: "text",
+      responseType: responseType ?? "text",
       request,
       response: null,
       headers: {},
@@ -140,19 +142,22 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       reply.headers = Object.fromEntries(reply.response.headers.entries());
       reply.status = reply.response.status;
 
-      const contentType = reply.response.headers.get("content-type");
-      const contentLength = +(reply.response.headers.get("content-length") ?? 0); // prettier-ignore
-      const contentDisposition = reply.response.headers.get("content-disposition"); // prettier-ignore
+      // Automatic detection of response type
+      if (!responseType) {
+        const contentType = reply.response.headers.get("content-type");
+        const contentLength = +(reply.response.headers.get("content-length") ?? 0); // prettier-ignore
+        const contentDisposition = reply.response.headers.get("content-disposition"); // prettier-ignore
 
-      if (contentLength === 0 || contentType?.startsWith("text/plain")) {
-        reply.responseType = "text";
-      } else if (contentType?.startsWith("application/json")) {
-        reply.responseType = "json";
-      } else if (
-        contentType?.startsWith("application/octet-stream") ||
-        contentDisposition?.startsWith("attachment")
-      ) {
-        reply.responseType = "blob";
+        if (contentLength === 0 || contentType?.startsWith("text/plain")) {
+          reply.responseType = "text";
+        } else if (contentType?.startsWith("application/json")) {
+          reply.responseType = "json";
+        } else if (
+          contentType?.startsWith("application/octet-stream") ||
+          contentDisposition?.startsWith("attachment")
+        ) {
+          reply.responseType = "blob";
+        }
       }
     } catch (error) {
       return handleError(error);
