@@ -10,16 +10,23 @@ import { createHeaders } from "./utils/createHeaders";
 
 type ResponseType = "text" | "json" | "blob";
 
-export type RequestOptions = Omit<Partial<Request>, "headers"> & {
+export type RequestOptions<D, R = any> = Omit<Partial<Request>, "headers"> & {
   params?: Record<string, unknown>;
   headers?: Record<string, string | number | boolean>;
+  /** Request body data */
   data?: unknown;
   responseType?: ResponseType;
-  // Custom error handler
+  /**
+   * Transform the reply body (.data).
+   * The return type must match the passed second parameter of the `createRequest` generic `D`.
+   * */
+  transformData?: (reply: Reply<R>) => D | undefined;
+  /** Custom error handler */
   onError?: (reply: Reply<unknown>) => Promise<Reply<unknown>>;
 };
 
-export type Reply<D> = {
+export type Reply<D, R = any> = {
+  /** Replay body data */
   data: D;
   /** Error if request is not sent */
   error?: unknown;
@@ -28,20 +35,20 @@ export type Reply<D> = {
   /** Received response (null if request sending error) */
   response: Response | null;
   headers: Record<string, string>;
-  /** Status == 0 if was't response */
+  /** Status == 0 if wasn't response */
   status: number;
-  options: RequestOptions;
+  options: RequestOptions<D, R>;
 };
 
-export type ForwardOptionsFn<O, E> = (
-  options: RequestOptions & O & E,
-) => (RequestOptions & E) | Promise<RequestOptions & E>;
+export type ForwardOptionsFn<O, E, D, R = any> = (
+  options: RequestOptions<D, R> & O & E,
+) => (RequestOptions<D, R> & E) | Promise<RequestOptions<D, R> & E>;
 
-export type RequestFn<O, D> = (options: O) => Promise<Reply<D>>;
+export type RequestFn<O, D, R = any> = (options: O) => Promise<Reply<D, R>>;
 
-export type CreateRequestFn<E = unknown> = <O, D>(
-  forwardOptions: ForwardOptionsFn<O, E>,
-) => RequestFn<O & RequestOptions & E, D>;
+export type CreateRequestFn<E = unknown> = <O, D, R = any>(
+  forwardOptions: ForwardOptionsFn<O, E, D, R>,
+) => RequestFn<O & RequestOptions<D, R> & E, D>;
 
 /**
  * Fetch API based utility for comfortable requests
@@ -74,15 +81,18 @@ export type CreateRequestFn<E = unknown> = <O, D>(
  */
 export const createRequest: CreateRequestFn = (forwardOptions) => {
   return async (options) => {
+    const forwardedOptions = await forwardOptions(options);
+
     const {
       url = "/",
       headers = {},
       params = {},
       data,
       responseType,
+      transformData,
       onError,
       ...requestOptions
-    } = await forwardOptions(options);
+    } = forwardedOptions;
 
     const requestUrl = new URL(url);
 
@@ -122,13 +132,26 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       response: null,
       headers: {},
       status: 0,
-      options: await forwardOptions(options),
+      options: forwardedOptions,
+    };
+
+    const handleTransformData = () => {
+      if (transformData) {
+        const transformedData = transformData(reply);
+
+        // `undefined` is a JS entity, it cannot be body data
+        if (transformedData !== undefined) {
+          reply.data = transformedData;
+        }
+      }
     };
 
     const handleError = async (error: unknown) => {
       reply.error = error;
+      // In the error response also use data transformation
+      handleTransformData();
 
-      // If has custom error handler
+      // If it has custom error handler
       if (onError) {
         return await onError(reply);
       }
@@ -191,6 +214,8 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
     if (reply.response.status >= 400) {
       return handleError(new Error("Server error status (>= 400)"));
     }
+
+    handleTransformData();
 
     return reply;
   };

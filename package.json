@@ -26,6 +26,7 @@
     }
   },
   "scripts": {
+    "dev": "vite",
     "build": "rimraf ./dist && npx tsc --project tsconfig.lib.json",
     "test": "vitest"
   },
@@ -33,6 +34,8 @@
     "prettier": "3.3.3",
     "rimraf": "^6.0.1",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.2"
+    "vitest": "3.0.5",
+    "vite": "6.3.6",
+    "@types/node": "^24.3.1"
   }
 }
