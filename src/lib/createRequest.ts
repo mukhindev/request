@@ -168,12 +168,9 @@ export const createRequest: CreateRequestFn = (forwardOptions) => {
       // Automatic detection of response type
       if (!responseType) {
         const contentType = reply.response.headers.get("content-type");
-        const contentLength = +(reply.response.headers.get("content-length") ?? 0); // prettier-ignore
         const contentDisposition = reply.response.headers.get("content-disposition"); // prettier-ignore
 
-        if (contentLength === 0 || contentType?.startsWith("text/plain")) {
-          reply.responseType = "text";
-        } else if (contentType?.startsWith("application/json")) {
+        if (contentType?.startsWith("application/json")) {
           reply.responseType = "json";
         } else if (
           contentType?.startsWith("application/octet-stream") ||

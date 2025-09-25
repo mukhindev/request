@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.1
+
+- [fix] automatic detection of response type json as text
+
 ## 1.6.0
 
 - [add] `transform` option for transform the reply body
