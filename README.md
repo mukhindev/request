@@ -314,6 +314,8 @@ const getTodo = createJsonPlaceholderRequest<CallOptions, ReplyData>(
 
     return {
       url: `/todos/${todoId}`,
+      // Type safe request options
+      isAuthorization: true,
       ...other,
     };
   }
@@ -322,8 +324,6 @@ const getTodo = createJsonPlaceholderRequest<CallOptions, ReplyData>(
 
 ```TypeScript
 getTodo({
-  // Type safe request options
-  isAuthorization: true,
   todoId: 3,
   params: {
     "some-param": 42,

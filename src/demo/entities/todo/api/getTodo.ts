@@ -20,6 +20,7 @@ export const getTodo = createJsonPlaceholderRequest<Options, Data>(
 
     return {
       url: joinUrl(TODO_API_BASE_PATH, todoId),
+      delay: 1500,
       transformData: ({ data, error }) => {
         // The error has a different answer, but it is also a body
         if (!error) {

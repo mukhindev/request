@@ -13,7 +13,6 @@ rootElement.append(preElement);
 
 todoApi
   .getTodo({
-    delay: 1500,
     todoId: 3,
     params: {
       "some-param": 42,

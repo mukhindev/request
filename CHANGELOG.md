@@ -1,8 +1,13 @@
 # Changelog
 
+## 2.0.0
+
+- [breaking change] New typing for request extension. In CreateRequestFn<E>, E is not assigned to the result. To pass it on to the next one, we now need to do it explicitly.
+- [add] `request` as a separate function
+
 ## 1.6.1
 
-- [fix] automatic detection of response type json as text
+- [fix] Automatic detection of response type json as text
 
 ## 1.6.0
 

@@ -1,5 +1,5 @@
-import { Reply } from "../createRequest";
 import { isRequestReply } from "./isRequestReply";
+import { Reply } from "../request";
 
 /** Check the error sending the request */
 export function isRequestError<T = unknown>(error: unknown): error is Reply<T> {

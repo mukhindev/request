@@ -1,4 +1,5 @@
 export * from "./createRequest";
+export * from "./request";
 
 /** Public utils */
 export { joinUrl } from "./utils/joinUrl";

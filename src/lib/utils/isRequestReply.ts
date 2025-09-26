@@ -1,4 +1,4 @@
-import { Reply } from "../createRequest";
+import { Reply } from "../request";
 
 /** Check if this reply your request (Response was received) */
 export function isRequestReply<T = unknown>(reply: unknown): reply is Reply<T> {
