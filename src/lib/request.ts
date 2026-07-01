@@ -73,11 +73,18 @@ export const request = async <D, S = any>(
 
   // If json, then set relevant headers
   if (!requestOptions.body && typeof data === "object" && data !== null) {
-    headers["Content-Type"] = "application/json";
+    if (data instanceof FormData) {
+      // Fetch automatically sets the Content-Type header to multipart/form-data
+      Object.assign(requestOptions, {
+        body: data,
+      });
+    } else {
+      headers["Content-Type"] = "application/json";
 
-    Object.assign(requestOptions, {
-      body: JSON.stringify(data),
-    });
+      Object.assign(requestOptions, {
+        body: JSON.stringify(data),
+      });
+    }
   }
 
   const request = new Request(requestUrl, {
